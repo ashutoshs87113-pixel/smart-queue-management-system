@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html-head('Home')}"></head>
+<body>
+
+    <nav th:replace="~{layout :: navbar}"></nav>
+    <div th:replace="~{layout :: alerts}"></div>
+
+    <!-- Hero Section -->
+    <div class="hero-banner text-center">
+        <div class="container">
+            <h1 class="display-4 fw-extrabold mb-3">SMART QUEUE MANAGEMENT SYSTEM</h1>
+            <p class="lead max-w-2xl mx-auto opacity-90 mb-4">
+                Skip the waiting line. Join the college service queue digitally from anywhere on campus.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/login" class="btn btn-light btn-lg px-4 rounded-pill fw-bold text-primary shadow">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i> LOGIN
+                </a>
+                <a href="/register" class="btn btn-outline-light btn-lg px-4 rounded-pill fw-bold shadow">
+                    <i class="fa-solid fa-user-plus me-2"></i> REGISTER
+                </a>
+                <a href="/queue-display" class="btn btn-warning btn-lg px-4 rounded-pill fw-bold text-dark shadow">
+                    <i class="fa-solid fa-desktop me-2"></i> VIEW QUEUE
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="row g-4 text-center mb-5">
+            <div class="col-md-4">
+                <div class="card card-custom p-4 h-100">
+                    <div class="text-primary mb-3">
+                        <i class="fa-solid fa-mobile-screen-button fs-1"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">Digital Token</h4>
+                    <p class="text-muted">Register and request a queue token directly from your mobile or laptop without physical waiting.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-custom p-4 h-100">
+                    <div class="text-primary mb-3">
+                        <i class="fa-solid fa-clock-rotate-left fs-1"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">Live Tracking</h4>
+                    <p class="text-muted">Track current serving tokens, see how many people are ahead of you, and view accurate waiting time.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-custom p-4 h-100">
+                    <div class="text-primary mb-3">
+                        <i class="fa-solid fa-headset fs-1"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">Efficient Administration</h4>
+                    <p class="text-muted">College counter staff manage queues seamlessly with one-click Call Next, Complete, and Skip controls.</p>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="fw-bold text-center mb-4"><i class="fa-solid fa-building-columns text-primary me-2"></i> Active College Services</h3>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4" th:each="service : ${services}">
+                <div class="card card-custom p-4 h-100 border-start border-4 border-primary">
+                    <h5 class="fw-bold" th:text="${service.serviceName}">Admission</h5>
+                    <p class="text-muted small" th:text="${service.description}">Service Description</p>
+                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                            <i class="fa-solid fa-stopwatch me-1"></i> Avg: <span th:text="${service.averageServiceTime}">10</span> mins
+                        </span>
+                        <a href="/login" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">Join Queue</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

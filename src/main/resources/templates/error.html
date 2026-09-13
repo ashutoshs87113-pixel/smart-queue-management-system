@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html-head('Error')}"></head>
+<body>
+
+    <nav th:replace="~{layout :: navbar}"></nav>
+
+    <div class="container my-5 py-5 text-center">
+        <div class="card card-custom p-5 max-w-lg mx-auto border-0">
+            <div class="text-danger mb-4">
+                <i class="fa-solid fa-triangle-exclamation display-1"></i>
+            </div>
+            <h2 class="fw-bold mb-3">Oops! Something went wrong</h2>
+            <p class="lead text-muted mb-4" th:text="${errorMessage != null ? errorMessage : 'An unexpected error occurred.'}">
+                An unexpected error occurred.
+            </p>
+            <div>
+                <a href="/" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
+                    <i class="fa-solid fa-house me-2"></i> Return to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

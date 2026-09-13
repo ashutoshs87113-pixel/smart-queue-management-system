@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html-head('My Queue')}"></head>
+<body>
+
+    <nav th:replace="~{layout :: navbar}"></nav>
+    <div th:replace="~{layout :: alerts}"></div>
+
+    <div class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="fa-solid fa-ticket text-primary me-2"></i> My Queue Tokens</h2>
+                <p class="text-muted mb-0">View active queue tokens and past queue history</p>
+            </div>
+            <a href="/dashboard" class="btn btn-outline-primary rounded-pill px-4 fw-semibold">
+                <i class="fa-solid fa-plus me-2"></i> Join New Queue
+            </a>
+        </div>
+
+        <!-- Active Queue Tokens Cards -->
+        <h4 class="fw-bold mb-3">Active Tokens Today</h4>
+        <div th:if="${#lists.isEmpty(activeQueues)}" class="alert alert-info rounded-4 p-4 shadow-sm border-0 mb-5 text-center">
+            <i class="fa-solid fa-circle-info fs-3 d-block mb-2"></i>
+            <span class="fw-semibold">You do not have any active queue tokens today.</span>
+            <div class="mt-3">
+                <a href="/dashboard" class="btn btn-primary rounded-pill px-4">Browse Services & Join Queue</a>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5" th:unless="${#lists.isEmpty(activeQueues)}">
+            <div class="col-md-6" th:each="item : ${activeQueues}">
+                <div class="card card-custom p-4 border-start border-5 border-primary">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="text-muted small">Token Number</span>
+                            <h2 class="token-badge mb-0" th:text="${item.tokenNumber}">ADM-001</h2>
+                        </div>
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold" th:text="${item.status}">WAITING</span>
+                    </div>
+
+                    <h5 class="fw-bold" th:text="${item.serviceName}">Admission</h5>
+
+                    <div class="row text-center my-3 py-2 bg-light rounded-3 g-2">
+                        <div class="col-4 border-end">
+                            <small class="text-muted d-block">Serving</small>
+                            <strong class="text-primary" th:text="${item.currentlyServingToken}">ADM-000</strong>
+                        </div>
+                        <div class="col-4 border-end">
+                            <small class="text-muted d-block">People Ahead</small>
+                            <strong class="text-dark" th:text="${item.peopleAhead}">2</strong>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">Est. Wait</small>
+                            <strong class="text-success" th:text="${item.estimatedWaitTimeMinutes} + 'm'">10m</strong>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/cancel-queue}" method="post" class="mt-2 text-end">
+                        <input type="hidden" name="queueId" th:value="${item.queueId}" />
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Cancel this token?');">
+                            <i class="fa-solid fa-trash me-1"></i> Cancel Token
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <h4 class="fw-bold mb-3"><i class="fa-solid fa-history text-secondary me-2"></i> Queue History</h4>
+        <div class="card card-custom p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Token #</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Joined At</th>
+                            <th>Called At</th>
+                            <th>Completed At</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(queueHistory)}">
+                            <td colspan="7" class="text-center text-muted py-4">No queue history recorded yet.</td>
+                        </tr>
+                        <tr th:each="entry : ${queueHistory}">
+                            <td class="fw-bold text-primary" th:text="${entry.tokenNumber}">ADM-001</td>
+                            <td th:text="${entry.service.serviceName}">Admission</td>
+                            <td th:text="${entry.queueDate}">2026-08-26</td>
+                            <td th:text="${#temporals.format(entry.joinTime, 'HH:mm:ss')}">10:00:00</td>
+                            <td th:text="${entry.calledTime != null ? #temporals.format(entry.calledTime, 'HH:mm:ss') : '---'}">---</td>
+                            <td th:text="${entry.completedTime != null ? #temporals.format(entry.completedTime, 'HH:mm:ss') : '---'}">---</td>
+                            <td>
+                                <span th:if="${entry.status.name() == 'WAITING'}" class="badge bg-warning text-dark rounded-pill px-3">WAITING</span>
+                                <span th:if="${entry.status.name() == 'SERVING'}" class="badge bg-primary rounded-pill px-3">SERVING</span>
+                                <span th:if="${entry.status.name() == 'COMPLETED'}" class="badge bg-success rounded-pill px-3">COMPLETED</span>
+                                <span th:if="${entry.status.name() == 'CANCELLED'}" class="badge bg-secondary rounded-pill px-3">CANCELLED</span>
+                                <span th:if="${entry.status.name() == 'SKIPPED'}" class="badge bg-danger rounded-pill px-3">SKIPPED</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>

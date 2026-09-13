@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Counter Display - Smart Queue Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .header-box {
+            background: linear-gradient(135deg, #1e1b4b 0%, #311b92 100%);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .serving-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(124, 58, 237, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .serving-number {
+            font-size: 6.5rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            color: #ffffff;
+            text-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+        }
+        .service-card {
+            background: #1e293b;
+            border-radius: 18px;
+            padding: 24px;
+            border: 1px solid #334155;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        .token-pill {
+            background: #0f172a;
+            color: #38bdf8;
+            font-size: 1.5rem;
+            font-weight: 800;
+            padding: 8px 20px;
+            border-radius: 12px;
+            border: 1px solid #0284c7;
+        }
+        .live-dot {
+            height: 12px;
+            width: 12px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px #22c55e;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="header-box d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <i class="fa-solid fa-desktop fs-1 text-primary"></i>
+                <div>
+                    <h1 class="fw-extrabold mb-0">SMART QUEUE MANAGEMENT SYSTEM</h1>
+                    <span class="text-indigo-300 lead opacity-75">College Public Counter Display</span>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 bg-dark px-4 py-2 rounded-pill border border-secondary">
+                <span class="live-dot"></span>
+                <span class="fw-bold text-uppercase tracking-wider fs-6">LIVE STATUS</span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Main Hero Display Card -->
+            <div class="col-lg-5">
+                <div class="serving-card h-100 d-flex flex-column justify-content-center">
+                    <span class="text-uppercase fw-bold tracking-widest text-indigo-200 fs-4 mb-2">NOW SERVING</span>
+                    <div id="mainServingToken" class="serving-number" th:text="${displayData.mainServing}">---</div>
+                    <div class="mt-4 pt-3 border-top border-white-20">
+                        <span class="fs-5 text-indigo-200">Please proceed to your respective service counter</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Breakdown -->
+            <div class="col-lg-7">
+                <div class="row g-3" id="serviceCardsContainer">
+                    <div class="col-md-6" th:each="svc : ${displayData.services}">
+                        <div class="service-card h-100">
+                            <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-2 mb-3">
+                                <h4 class="fw-bold text-light mb-0" th:text="${svc.serviceName}">Admission</h4>
+                                <span class="badge bg-primary fs-6 px-3 py-2" th:text="'Serving: ' + ${svc.nowServing}">Serving: ADM-001</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted text-uppercase fw-bold">Next Tokens in Queue</small>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span th:if="${#lists.isEmpty(svc.nextTokens)}" class="text-muted fs-6">No waiting tokens</span>
+                                <span th:each="tok : ${svc.nextTokens}" class="token-pill" th:text="${tok}">ADM-002</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AJAX Auto-refresh Script (polls every 3 seconds) -->
+    <script>
+        function refreshQueueDisplay() {
+            fetch('/api/public/queue-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.mainServing) {
+                        document.getElementById('mainServingToken').innerText = data.mainServing;
+                    }
+
+                    if (data.services && Array.isArray(data.services)) {
+                        const container = document.getElementById('serviceCardsContainer');
+                        let html = '';
+                        data.services.forEach(svc => {
+                            let nextTokensHtml = '';
+                            if (svc.nextTokens && svc.nextTokens.length > 0) {
+                                svc.nextTokens.forEach(t => {
+                                    nextTokensHtml += `<span class="token-pill">${t}</span> `;
+                                });
+                            } else {
+                                nextTokensHtml = '<span class="text-muted fs-6">No waiting tokens</span>';
+                            }
+
+                            html += `
+                                <div class="col-md-6">
+                                    <div class="service-card h-100">
+                                        <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-2 mb-3">
+                                            <h4 class="fw-bold text-light mb-0">${svc.serviceName}</h4>
+                                            <span class="badge bg-primary fs-6 px-3 py-2">Serving: ${svc.nowServing}</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <small class="text-muted text-uppercase fw-bold">Next Tokens in Queue</small>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            ${nextTokensHtml}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                    }
+                })
+                .catch(err => console.error("Error updating queue display:", err));
+        }
+
+        // Poll every 3 seconds
+        setInterval(refreshQueueDisplay, 3000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: html-head('Manage Services')}"></head>
+<body>
+
+    <nav th:replace="~{layout :: navbar}"></nav>
+    <div th:replace="~{layout :: alerts}"></div>
+
+    <div class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <div>
+                <a href="/admin" class="text-decoration-none text-muted small fw-bold"><i class="fa-solid fa-arrow-left me-1"></i> BACK TO DASHBOARD</a>
+                <h2 class="fw-extrabold mb-0 mt-1"><i class="fa-solid fa-gears text-primary me-2"></i> Manage Services</h2>
+            </div>
+            <button type="button" class="btn btn-primary rounded-pill px-4 fw-semibold" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                <i class="fa-solid fa-plus me-2"></i> Add New Service
+            </button>
+        </div>
+
+        <!-- Services List Table -->
+        <div class="card card-custom p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Service Name</th>
+                            <th>Description</th>
+                            <th>Avg Service Time</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="service : ${services}">
+                            <td class="fw-bold text-muted" th:text="${service.id}">1</td>
+                            <td class="fw-bold text-dark" th:text="${service.serviceName}">Admission</td>
+                            <td th:text="${service.description}">College admission process</td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-3 py-2">
+                                    <i class="fa-solid fa-clock me-1 text-primary"></i> <span th:text="${service.averageServiceTime}">10</span> mins
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${service.active}" class="badge bg-success rounded-pill px-3 py-2">ACTIVE</span>
+                                <span th:unless="${service.active}" class="badge bg-danger rounded-pill px-3 py-2">INACTIVE</span>
+                            </td>
+                            <td class="text-end">
+                                <form th:action="@{/admin/services/toggle}" method="post" class="d-inline">
+                                    <input type="hidden" name="id" th:value="${service.id}" />
+                                    <button type="submit" class="btn btn-sm rounded-pill px-3" th:classappend="${service.active} ? 'btn-outline-warning' : 'btn-outline-success'">
+                                        <span th:text="${service.active} ? 'Deactivate' : 'Activate'">Toggle</span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Service Modal -->
+    <div class="modal fade" id="addServiceModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-plus-circle text-primary me-2"></i> Add College Service</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/services/add}" th:object="${serviceRequest}" method="post">
+                    <div class="modal-body py-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Service Name</label>
+                            <input type="text" th:field="*{serviceName}" class="form-control" placeholder="e.g. Sports Clearance" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Description</label>
+                            <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Brief description of the service..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Average Service Time (minutes)</label>
+                            <input type="number" th:field="*{averageServiceTime}" class="form-control" min="1" max="120" placeholder="10" required />
+                        </div>
+                        <div class="form-check form-switch mt-3">
+                            <input class="form-check-input" type="checkbox" th:field="*{active}" id="activeSwitch" checked>
+                            <label class="form-check-label fw-semibold" for="activeSwitch">Active for Students</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold">Create Service</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{layout :: footer}"></footer>
+
+</body>
+</html>
